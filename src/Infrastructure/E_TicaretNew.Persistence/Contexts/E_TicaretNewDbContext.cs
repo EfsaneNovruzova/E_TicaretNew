@@ -1,4 +1,5 @@
 ﻿using E_Ticaret.Domain.Entities;
+using E_Ticaret.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
@@ -6,12 +7,12 @@ namespace E_TicaretNew.Persistence.Contexts;
 
 public class E_TicaretNewDbContext : DbContext
 {
-    public E_TicaretNewDbContext(DbContextOptions<E_TicaretNewDbContext> options)
+    public E_TicaretNewDbContext(DbContextOptions<E_TicaretNewDbContext> options) : base(options)
     {
 
     }
     public DbSet<Category> Categories { get; set; }
-    public DbSet<Favourite> Favourites { get; set; }
+    public DbSet<Favorite> Favorites { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Order> Orders { get; set; }
@@ -20,5 +21,10 @@ public class E_TicaretNewDbContext : DbContext
     public DbSet<Review> Reviews { get; set; }
     public DbSet<User> Users { get; set; }
 
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FavoriteConfiguration).Assembly);
+    }
 
 }
