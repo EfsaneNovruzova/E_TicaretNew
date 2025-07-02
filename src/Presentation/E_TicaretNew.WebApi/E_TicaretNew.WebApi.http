@@ -1,0 +1,6 @@
+@E_TicaretNew.WebApi_HostAddress = http://localhost:5094
+
+GET {{E_TicaretNew.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
