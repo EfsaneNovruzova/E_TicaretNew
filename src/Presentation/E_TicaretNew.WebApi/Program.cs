@@ -1,13 +1,21 @@
-using E_Ticaret.Domain.Entities;
+﻿using E_Ticaret.Domain.Entities;
+using E_TicaretNew.Application.Validations.UserValodations;
+using E_TicaretNew.Persistence;
 using E_TicaretNew.Persistence.Contexts;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddValidatorsFromAssembly(typeof(UserRegisterDtoValidator).Assembly);
+builder.Services.RegisterService(); // bunu əlavə et
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<E_TicaretNewDbContext>(options =>
@@ -37,6 +45,7 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 
