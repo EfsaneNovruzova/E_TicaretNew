@@ -1,11 +1,12 @@
 ﻿using E_Ticaret.Domain.Entities;
 using E_Ticaret.Persistence.Configurations;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace E_TicaretNew.Persistence.Contexts;
 
-public class E_TicaretNewDbContext : DbContext
+public class E_TicaretNewDbContext : IdentityDbContext<User>
 {
     public E_TicaretNewDbContext(DbContextOptions<E_TicaretNewDbContext> options) : base(options)
     {
@@ -22,8 +23,11 @@ public class E_TicaretNewDbContext : DbContext
     public DbSet<User> Users { get; set; }
 
 
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(FavoriteConfiguration).Assembly);
     }
 

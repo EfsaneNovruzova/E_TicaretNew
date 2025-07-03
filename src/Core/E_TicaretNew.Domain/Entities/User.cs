@@ -1,16 +1,18 @@
-﻿namespace E_Ticaret.Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class User:BaseEntity
+namespace E_Ticaret.Domain.Entities;
+
+public class User : IdentityUser
 {
-    public string Name { get; set; }
-    public string Email { get; set; } = null!;
-    public string PasswordHash { get; set; } = null!;
-    public string? PhoneNumber { get; set; }
-    public ICollection<Product> Products { get; set; }
+    public string FulName { get; set; } = null!;  
 
-    public ICollection<Favorite> Favorites { get; set; }
+    public ICollection<Product> Products { get; set; } = new List<Product>();
 
-    public ICollection<Order> Orders { get; set; }
-    public ICollection<Notification> Notifications { get; set; }
-    public ICollection<Review> Reviews { get; set; }
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

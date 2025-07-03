@@ -3,8 +3,8 @@
 public class BaseEntity
 {
     public Guid Id { get; set; }
-    public Guid? CreatedUser { get; set; }
+    public string? CreatedUser { get; set; }
     public DateTime? CreatedAt { get; set; }
-    public Guid? UpdatedUser { get; set; }
+    public string? UpdatedUser { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
