@@ -1,11 +1,15 @@
-﻿using E_Ticaret.Domain.Entities;
+﻿using System.Text;
+using E_Ticaret.Domain.Entities;
+using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Validations.UserValodations;
 using E_TicaretNew.Persistence;
 using E_TicaretNew.Persistence.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +36,37 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<E_TicaretNewDbContext>()
 .AddDefaultTokenProviders();
+// JWT Settings load və register
+var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
+
+builder.Services.Configure<JWTSettings>(jwtSettingsSection);
+var jwtSettings = jwtSettingsSection.Get<JWTSettings>()!;
+builder.Services.AddSingleton(jwtSettings);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+
+
 
 
 var app = builder.Build();
@@ -45,6 +80,7 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 
 
 app.UseAuthorization();

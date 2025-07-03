@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace AzBina.Application.Shared;
+namespace E_TicaretNew.Application.Shared.Setting.Responses;
 
- public class BaseResponse<T>
- {
+public class BaseResponse<T>
+{
     public bool Success { get; set; }
     public string? Message { get; set; }
     public T? Data { get; set; }
@@ -12,21 +12,21 @@ namespace AzBina.Application.Shared;
     public BaseResponse(HttpStatusCode statusCode)
     {
         Success = true;
-        StatusCode=statusCode;
+        StatusCode = statusCode;
     }
     public BaseResponse(string message, HttpStatusCode statusCode)
     {
-        Message = message;  
+        Message = message;
         Success = false;
         StatusCode = statusCode;
     }
-    public BaseResponse(string message,bool isSuccess, HttpStatusCode statusCode)
+    public BaseResponse(string message, bool isSuccess, HttpStatusCode statusCode)
     {
         Message = message;
         Success = isSuccess;
         StatusCode = statusCode;
     }
-    public BaseResponse(string message,T data, HttpStatusCode statusCode)
+    public BaseResponse(string message, T data, HttpStatusCode statusCode)
     {
         Message = message;
         Data = data;
