@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace E_TicaretNew.Application.Shared.Setting.Responses;
+namespace E_TicaretNew.Application.Shared.Responses;
 
 public class BaseResponse<T>
 {

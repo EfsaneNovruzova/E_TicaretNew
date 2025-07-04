@@ -1,5 +1,5 @@
 ﻿using E_TicaretNew.Application.DTOs.CategoryDtos;
-using E_TicaretNew.Application.Shared.Setting.Responses;
+using E_TicaretNew.Application.Shared.Responses;
 
 namespace E_TicaretNew.Application.Abstracts.Services;
 
