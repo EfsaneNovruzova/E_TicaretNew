@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.CategoryDtos;
-using E_TicaretNew.Application.Shared.Setting.Responses;
+using E_TicaretNew.Application.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +19,7 @@ namespace E_TicaretNew.WebApi.Controllers
             _categoryService = categoryService;
         }
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]

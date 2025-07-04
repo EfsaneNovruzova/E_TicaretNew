@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.CategoryDtos;
-using E_TicaretNew.Application.Shared.Setting.Responses;
+using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
