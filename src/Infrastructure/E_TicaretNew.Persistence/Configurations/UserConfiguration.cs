@@ -1,4 +1,4 @@
-﻿using E_Ticaret.Domain.Entities;
+﻿using E_TicaretNew.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

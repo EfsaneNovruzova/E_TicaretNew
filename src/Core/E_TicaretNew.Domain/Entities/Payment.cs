@@ -1,6 +1,7 @@
-﻿using E_Ticaret.Domain.Entities;
+﻿using E_TicaretNew.Domain.Entities;
 
 namespace E_TicaretNew.Domain.Entities;
+
 
 public class Payment : BaseEntity
 {

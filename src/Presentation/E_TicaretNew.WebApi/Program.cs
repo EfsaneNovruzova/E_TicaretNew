@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using E_Ticaret.Domain.Entities;
+using E_TicaretNew.Domain.Entities;
 using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Validations.UserValodations;
 using E_TicaretNew.Persistence;
