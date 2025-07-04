@@ -1,4 +1,4 @@
-﻿namespace E_Ticaret.Domain.Entities;
+﻿namespace E_TicaretNew.Domain.Entities;
 
 public class Review
 {

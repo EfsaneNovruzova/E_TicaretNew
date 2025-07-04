@@ -1,4 +1,4 @@
-﻿using E_Ticaret.Domain.Entities;
+﻿using E_TicaretNew.Domain.Entities;
 using E_Ticaret.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

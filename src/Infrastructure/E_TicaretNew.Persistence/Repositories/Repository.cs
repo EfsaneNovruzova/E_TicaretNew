@@ -1,4 +1,4 @@
-﻿using E_Ticaret.Domain.Entities;
+﻿using E_TicaretNew.Domain.Entities;
 using E_TicaretNew.Application.Abstracts.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

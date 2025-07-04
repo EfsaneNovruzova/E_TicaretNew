@@ -2,7 +2,7 @@
 using System.Net;
 using System.Security.Claims;
 using System.Text;
-using E_Ticaret.Domain.Entities;
+using E_TicaretNew.Domain.Entities;
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.UserDtos;
 using E_TicaretNew.Application.Shared.Setting;

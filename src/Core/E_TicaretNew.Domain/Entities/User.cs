@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+namespace E_TicaretNew.Domain.Entities;
 
-namespace E_Ticaret.Domain.Entities;
 
 public class User : IdentityUser
 {

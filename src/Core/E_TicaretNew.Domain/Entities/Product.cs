@@ -1,8 +1,8 @@
 ﻿using static System.Net.Mime.MediaTypeNames;
+namespace E_TicaretNew.Domain.Entities;
 
-namespace E_Ticaret.Domain.Entities;
 
-public  class Product:BaseEntity
+public class Product:BaseEntity
 {
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
