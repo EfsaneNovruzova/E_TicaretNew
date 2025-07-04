@@ -2,7 +2,8 @@
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.UserDtos;
 using Microsoft.AspNetCore.Mvc;
-using E_TicaretNew.Application.Shared.Setting.Responses;
+using E_TicaretNew.Application.Shared.Responses;
+using E_TicaretNew.Application.Shared;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,12 +30,23 @@ namespace E_TicaretNew.WebApi.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse<TokenResponse>), (int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(BaseResponse<TokenResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> login([FromBody] UserLoginDto dto)
         {
             var result = await _userService.Login(dto);
+            return StatusCode((int)result.StatusCode, result);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<TokenResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest dto)
+        {
+            var result = await _userService.RefreshTokenAsync(dto);
             return StatusCode((int)result.StatusCode, result);
         }
 
