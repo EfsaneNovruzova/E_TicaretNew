@@ -51,5 +51,14 @@ namespace E_TicaretNew.WebApi.Controllers
         }
 
 
+        [HttpPost("assing -roles")]
+        [ProducesResponseType(typeof(BaseResponse<TokenResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> AddRole([FromBody] UserAddRoleDto dto)
+        {
+            var result = await _userService.AddRole(dto);
+            return StatusCode((int)result.StatusCode, result);
+        }
     }
 }

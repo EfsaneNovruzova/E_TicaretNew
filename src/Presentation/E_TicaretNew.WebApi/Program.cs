@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using E_TicaretNew.Application.Shared.Setting;
+using E_TicaretNew.Application.Shared.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,15 @@ var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
 
 builder.Services.Configure<JWTSettings>(jwtSettingsSection);
 var jwtSettings = jwtSettingsSection.Get<JWTSettings>()!;
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in PermissionHelper.GetAllPermissionList())
+    {
+        options.AddPolicy(permission, policy =>
+            policy.RequireClaim("Permission", permission));
+    }
+});
+
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddAuthentication(options =>
 {
