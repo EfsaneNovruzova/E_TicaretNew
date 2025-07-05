@@ -60,5 +60,17 @@ namespace E_TicaretNew.WebApi.Controllers
             var result = await _userService.AddRole(dto);
             return StatusCode((int)result.StatusCode, result);
         }
+
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse<TokenResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            var result = await _userService.ConfirmEmail(userId,token);
+            return StatusCode((int)result.StatusCode, result);
+        }
     }
 }

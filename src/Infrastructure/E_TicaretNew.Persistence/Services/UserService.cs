@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Shared;
+using System.Web;
 
 namespace E_TicaretNew.Persistence.Services;
 
@@ -55,6 +56,8 @@ public class UserService : IUserService
 
             return new BaseResponse<string>(errorMessage.ToString(), HttpStatusCode.BadRequest);
         }
+        string confirmEmailLink = await GetEmailConfirmlink(newUser);
+
         return new("Successfully creted", HttpStatusCode.Created);
     }
 
@@ -78,62 +81,7 @@ public class UserService : IUserService
         var token =  await GenerateTokensAsync(existedUser);
         return new("Token generated", token, HttpStatusCode.OK);
     }
-    private async Task<TokenResponse> GenerateTokensAsync(User user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier,user.Id),
-            new Claim(ClaimTypes.Email,user.Email!)
-        };
-
-        var roles = await _usermanager.GetRolesAsync(user);
-        foreach (var roleName in roles) 
-        {
-            claims.Add(new Claim(ClaimTypes.Role, roleName));
-
-            var role = await _roleManager.FindByNameAsync(roleName);
-            if (role != null)
-            {
-                var roleClaims = await _roleManager.GetClaimsAsync(role);
-                var permissionClaims = roleClaims
-                    .Where(c => c.Type == "Permission")
-                    .Distinct();
-                foreach (var permissionClaim in permissionClaims)
-                {
-                    claims.Add(new Claim("Permission", permissionClaim.Value));
-                }
-            }
-        }
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSetting.ExpiresInMinutes),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = _jwtSetting.Issuer,
-            Audience = _jwtSetting.Audience
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var jwt = tokenHandler.WriteToken(token);
-
-        var refreshToken = GenerateRefreshToken();
-        var refreshTokenExpiryDate = DateTime.UtcNow.AddHours(2);
-
-        user.RefreshToken = refreshToken; 
-        user.ExpiryDate = refreshTokenExpiryDate;
-
-        await _usermanager.UpdateAsync(user); 
-
-        return new TokenResponse
-        {
-            Token = jwt,
-            RefreshToken = refreshToken,
-            ExpireDate = tokenDescriptor.Expires
-        };
-    }
+   
 
     public async Task<BaseResponse<TokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
     {
@@ -188,6 +136,86 @@ public class UserService : IUserService
             (
             $"Successfully added roles :{string .Join(",",roleNames)} to user.", HttpStatusCode.OK
             );
+    }
+
+    public async Task<BaseResponse<string>> ConfirmEmail(string userId, string token)
+    {
+        var existedUser = await _usermanager.FindByIdAsync(userId);
+        if (existedUser is null) 
+        {
+            return new("Email Confirmation Failed.", HttpStatusCode.NotFound);
+        }
+        var result = await _usermanager.ConfirmEmailAsync(existedUser, token);
+        if (!result.Succeeded)
+        {
+            return new("Email Confirmation Failed.", HttpStatusCode.BadRequest);
+        }
+        return new("Email Confirmation successfully.", HttpStatusCode.OK);
+    }
+    private async Task<string> GetEmailConfirmlink(User user)
+    {
+        var token = await _usermanager.GenerateEmailConfirmationTokenAsync(user);
+        var link = $"https://localhost:7202/api/Accounts/ConfirmEmail?userId={user.Id}$token=" +
+            $"{HttpUtility.UrlPathEncode(token)}";
+        Console.WriteLine("Confirm email link"+link);
+        return link ;
+
+    }
+    private async Task<TokenResponse> GenerateTokensAsync(User user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier,user.Id),
+            new Claim(ClaimTypes.Email,user.Email!)
+        };
+
+        var roles = await _usermanager.GetRolesAsync(user);
+        foreach (var roleName in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, roleName));
+
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role != null)
+            {
+                var roleClaims = await _roleManager.GetClaimsAsync(role);
+                var permissionClaims = roleClaims
+                    .Where(c => c.Type == "Permission")
+                    .Distinct();
+                foreach (var permissionClaim in permissionClaims)
+                {
+                    claims.Add(new Claim("Permission", permissionClaim.Value));
+                }
+            }
+        }
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(_jwtSetting.ExpiresInMinutes),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _jwtSetting.Issuer,
+            Audience = _jwtSetting.Audience
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var jwt = tokenHandler.WriteToken(token);
+
+        var refreshToken = GenerateRefreshToken();
+        var refreshTokenExpiryDate = DateTime.UtcNow.AddHours(2);
+
+        user.RefreshToken = refreshToken;
+        user.ExpiryDate = refreshTokenExpiryDate;
+
+        await _usermanager.UpdateAsync(user);
+
+        return new TokenResponse
+        {
+            Token = jwt,
+            RefreshToken = refreshToken,
+            ExpireDate = tokenDescriptor.Expires
+        };
     }
     private string GenerateRefreshToken()
     {
