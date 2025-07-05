@@ -19,12 +19,14 @@ public class UserService : IUserService
 {
     private UserManager<User> _usermanager { get;  }
     private SignInManager<User> _signInManager { get; }
+    private RoleManager<IdentityRole> _roleManager { get; }
     private JWTSettings _jwtSetting { get; }
-    public UserService(UserManager<User> usermanager, SignInManager<User> signInManager, IOptions<JWTSettings> jwtSettings)
+    public UserService(UserManager<User> usermanager, SignInManager<User> signInManager, IOptions<JWTSettings> jwtSettings, RoleManager<IdentityRole> roleManager)
     {
         _usermanager = usermanager;
         _signInManager = signInManager;
         _jwtSetting = jwtSettings.Value;
+        _roleManager = roleManager;
     }
 
 
@@ -81,12 +83,30 @@ public class UserService : IUserService
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Email, user.Email)
-    };
+            new Claim(ClaimTypes.NameIdentifier,user.Id),
+            new Claim(ClaimTypes.Email,user.Email!)
+        };
 
+        var roles = await _usermanager.GetRolesAsync(user);
+        foreach (var roleName in roles) 
+        {
+            claims.Add(new Claim(ClaimTypes.Role, roleName));
+
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role != null)
+            {
+                var roleClaims = await _roleManager.GetClaimsAsync(role);
+                var permissionClaims = roleClaims
+                    .Where(c => c.Type == "Permission")
+                    .Distinct();
+                foreach (var permissionClaim in permissionClaims)
+                {
+                    claims.Add(new Claim("Permission", permissionClaim.Value));
+                }
+            }
+        }
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -136,6 +156,39 @@ public class UserService : IUserService
         return new("Refreshed",tokenResponse,HttpStatusCode.OK);
     }
 
+    public async Task<BaseResponse<string>> AddRole(UserAddRoleDto dto)
+    {
+        var user = await _usermanager.FindByIdAsync(dto.UserId.ToString());
+        if (user == null)
+        {
+         return new BaseResponse<string>("User not Found.",HttpStatusCode.NotFound);
+        }
+        var roleNames = new List<string>();
+
+        foreach (var roleId in dto.RolesId.Distinct()) 
+        { 
+            var role = await _roleManager.FindByIdAsync(roleId.ToString());
+            if (role == null)
+            {
+                return new BaseResponse<string>($"Role with Id '{roleId}' not found.",
+                   HttpStatusCode.NotFound );
+            }
+            if (!await _usermanager.IsInRoleAsync(user, role.Name!))
+            {
+                var result = await _usermanager.AddToRoleAsync(user,role.Name!);
+                if (!result.Succeeded) 
+                {
+                    var errors = string.Join(";", result.Errors.Select(e => e.Description));
+                    return new BaseResponse<string>($"Failed to add role ;{role.Name} to user:{errors}", HttpStatusCode.BadRequest);
+                }
+                roleNames.Add(role.Name!);
+            }
+        }
+        return new BaseResponse<string>
+            (
+            $"Successfully added roles :{string .Join(",",roleNames)} to user.", HttpStatusCode.OK
+            );
+    }
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
