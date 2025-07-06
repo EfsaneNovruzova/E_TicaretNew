@@ -9,15 +9,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using AutoMapper;
+
 using Microsoft.OpenApi.Models;
 using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Shared.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddValidatorsFromAssembly(typeof(UserRegisterDtoValidator).Assembly);
-builder.Services.RegisterService(); // bunu əlavə et
+builder.Services.RegisterService();
+builder.Services.AddAutoMapper(typeof(Program));
+
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
@@ -73,9 +79,11 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 // JWT Settings load və register
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-
 builder.Services.Configure<JWTSettings>(jwtSettingsSection);
+builder.Services.AddScoped(sp => sp.GetRequiredService<IOptions<JWTSettings>>().Value); // BU MÜTLƏQDİR
+
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 var jwtSettings = jwtSettingsSection.Get<JWTSettings>()!;
 
 builder.Services.AddAuthorization(options =>
