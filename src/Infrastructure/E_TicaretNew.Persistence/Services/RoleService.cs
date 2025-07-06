@@ -18,14 +18,14 @@ public class RoleService : IRoleService
 
     public async Task<BaseResponse<string?>> CreateRole(RoleCreateDto dto)
     {
-        // Əvvəlcə yoxla: belə adla rol var?
+    
         var isRoleExist = await _roleManager.RoleExistsAsync(dto.Name);
         if (isRoleExist)
         {
             return new BaseResponse<string?>("Role already exists", null, HttpStatusCode.BadRequest);
         }
 
-        // Yeni rol obyektini yarat
+        
         var identityRole = new IdentityRole(dto.Name);
         var result = await _roleManager.CreateAsync(identityRole);
 
@@ -35,13 +35,38 @@ public class RoleService : IRoleService
             return new BaseResponse<string?>($"Failed to create role: {errors}", null, HttpStatusCode.BadRequest);
         }
 
-        // ⚠️ BURADA: Permission-ləri rola claim kimi əlavə et
+       
         foreach (var permission in dto.PermissionList.Distinct())
         {
             await _roleManager.AddClaimAsync(identityRole, new Claim("Permission", permission));
         }
 
         return new BaseResponse<string?>("Role created successfully", null, HttpStatusCode.Created);
+    }
+
+
+    public async Task<BaseResponse<List<IdentityRole>>> GetAllRoles()
+    {
+        var roles = _roleManager.Roles.ToList();
+        return new BaseResponse<List<IdentityRole>>("Roles retrieved successfully", roles, HttpStatusCode.OK);
+    }
+
+    public async Task<BaseResponse<string?>> DeleteRole(string roleName)
+    {
+        var role = await _roleManager.FindByNameAsync(roleName);
+        if (role == null)
+        {
+            return new BaseResponse<string?>("Role not found", false, HttpStatusCode.NotFound);
+        }
+
+        var result = await _roleManager.DeleteAsync(role);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(" | ", result.Errors.Select(e => e.Description));
+            return new BaseResponse<string?>($"Failed to delete role: {errors}", false, HttpStatusCode.BadRequest);
+        }
+
+        return new BaseResponse<string?>("Role deleted successfully", true, HttpStatusCode.OK);
     }
 
 }
