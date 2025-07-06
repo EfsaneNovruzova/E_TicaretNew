@@ -29,5 +29,20 @@ namespace E_TicaretNew.WebApi.Controllers
             return StatusCode((int)result.StatusCode, result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var result = await _roleService.GetAllRoles();
+            return StatusCode((int)result.StatusCode, result);
+        }
+
+        [HttpDelete("{roleName}")]
+        public async Task<IActionResult> DeleteRole(string roleName)
+        {
+            var result = await _roleService.DeleteRole(roleName);
+            return StatusCode((int)result.StatusCode, result);
+        }
+
+
     }
 }
