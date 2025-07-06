@@ -1,0 +1,30 @@
+[33md26b27e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Merge pull request #21 from EfsaneNovruzova/scrum-8/Email-Confirmation
+[33mc05c560[m[33m ([m[1;31morigin/scrum-8/Email-Confirmation[m[33m, [m[1;32mscrum-8/Email-Confirmation[m[33m)[m Create email
+[33m60bcffb[m Merge pull request #20 from EfsaneNovruzova/staging
+[33m647eda7[m[33m ([m[1;31morigin/staging[m[33m, [m[1;32mstaging[m[33m)[m Merge pull request #19 from EfsaneNovruzova/scrum-7/Authorize
+[33m66d8da4[m[33m ([m[1;31morigin/scrum-7/Authorize[m[33m, [m[1;32mscrum-7/Authorize[m[33m)[m policy
+[33mf4c51cd[m Merge pull request #18 from EfsaneNovruzova/staging
+[33m331ec08[m Merge pull request #17 from EfsaneNovruzova/scrum-7/Authorize
+[33m297d93e[m  Create RefreshToken
+[33meea289a[m Merge pull request #16 from EfsaneNovruzova/staging
+[33mf78e4da[m Merge pull request #15 from EfsaneNovruzova/scrum-6/Category
+[33mc52567e[m[33m ([m[1;31morigin/scrum-6/Category[m[33m, [m[1;32mscrum-6/Category[m[33m)[m Create reposity
+[33m5786eec[m Merge pull request #14 from EfsaneNovruzova/staging
+[33m4ff5133[m Merge pull request #13 from EfsaneNovruzova/scrum-5/JWT-Token
+[33md6e3a76[m[33m ([m[1;31morigin/scrum-5/JWT-Token[m[33m, [m[1;32mscrum-5/JWT-Token[m[33m)[m create JWT
+[33m9ce15aa[m Merge pull request #12 from EfsaneNovruzova/staging
+[33m2226631[m Merge pull request #11 from EfsaneNovruzova/scrum-4/User
+[33mdc94c44[m[33m ([m[1;31morigin/scrum-4/User[m[33m, [m[1;32mscrum-4/User[m[33m)[m Create User
+[33m23e074b[m Merge pull request #10 from EfsaneNovruzova/staging
+[33m866fece[m Merge pull request #9 from EfsaneNovruzova/scrum-3/Configuration
+[33m4543a7a[m[33m ([m[1;31morigin/scrum-3/Configuration[m[33m, [m[1;32mscrum-3/Configuration[m[33m)[m Created
+[33m273b525[m Merge pull request #7 from EfsaneNovruzova/staging
+[33mbb26c01[m Merge pull request #6 from EfsaneNovruzova/scrum-3/Configuration
+[33mdc84bd1[m  success Created Configuration
+[33m8c6e16c[m Merge pull request #5 from EfsaneNovruzova/staging
+[33mf302168[m Merge pull request #4 from EfsaneNovruzova/scrum-2/DbContext
+[33mb25f957[m[33m ([m[1;31morigin/scrum-2/DbContext[m[33m, [m[1;32mscrum-2/DbContext[m[33m)[m Created DbContext
+[33m6dad820[m Merge pull request #3 from EfsaneNovruzova/staging
+[33mf5e88ed[m Merge pull request #2 from EfsaneNovruzova/scrum-1/Entities
+[33mfd2ef2b[m[33m ([m[1;31morigin/scrum-1/Entities[m[33m, [m[1;32mscrum-1/Entities[m[33m)[m create entity
+[33mf004784[m first commit

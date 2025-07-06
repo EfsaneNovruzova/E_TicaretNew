@@ -19,54 +19,68 @@ namespace E_TicaretNew.Persistence.Services;
 public class UserService : IUserService
 {
     private UserManager<User> _usermanager { get;  }
+    private IEmailService _emailService { get; }
     private SignInManager<User> _signInManager { get; }
     private RoleManager<IdentityRole> _roleManager { get; }
     private JWTSettings _jwtSetting { get; }
-    public UserService(UserManager<User> usermanager, SignInManager<User> signInManager, IOptions<JWTSettings> jwtSettings, RoleManager<IdentityRole> roleManager)
+    public UserService(UserManager<User> usermanager, SignInManager<User> signInManager, IOptions<JWTSettings> jwtSettings, RoleManager<IdentityRole> roleManager, IEmailService emailService)
     {
         _usermanager = usermanager;
         _signInManager = signInManager;
         _jwtSetting = jwtSettings.Value;
         _roleManager = roleManager;
+        _emailService = emailService;
     }
 
 
     public async Task<BaseResponse<string>> Register(UserRegisterDto dto)
     {
-    var existedEmail=await _usermanager.FindByEmailAsync(dto.Email);
+        var existedEmail = await _usermanager.FindByEmailAsync(dto.Email);
         if (existedEmail is not null)
         {
             return new BaseResponse<string>("This account already exist", HttpStatusCode.BadRequest);
         }
+
         User newUser = new()
         {
             Email = dto.Email,
             FulName = dto.FulName,
-            UserName = dto.Email
+            UserName = dto.Email,
+            RefreshToken = GenerateRefreshToken(),
+            ExpiryDate = DateTime.UtcNow.AddHours(2)
         };
-        IdentityResult identityResult= await _usermanager.CreateAsync(newUser,dto.Password);
-        if (!identityResult.Succeeded) 
+
+        IdentityResult identityResult = await _usermanager.CreateAsync(newUser, dto.Password);
+        if (!identityResult.Succeeded)
         {
             var errors = identityResult.Errors;
             StringBuilder errorMessage = new();
             foreach (var error in errors)
             {
-                errorMessage.Append(error.Description+" ");
+                errorMessage.Append(error.Description + " ");
             }
 
             return new BaseResponse<string>(errorMessage.ToString(), HttpStatusCode.BadRequest);
         }
-        string confirmEmailLink = await GetEmailConfirmlink(newUser);
 
-        return new("Successfully creted", HttpStatusCode.Created);
+        string confirmEmailLink = await GetEmailConfirmlink(newUser);
+        await _emailService.SendEmailAsync(new List<string> { newUser.Email }, "Email Confirmation",
+            confirmEmailLink);
+        return new("Successfully created", HttpStatusCode.Created);
     }
 
-    public  async Task<BaseResponse<TokenResponse>> Login(UserLoginDto dto)
+
+    public async Task<BaseResponse<TokenResponse>> Login(UserLoginDto dto)
     {
         var existedUser = await _usermanager.FindByEmailAsync(dto.Email);
         if (existedUser is null) 
         {
             return new("Emaail or Password is wrong.", null, HttpStatusCode.NotFound);
+        }
+
+        if (!existedUser.EmailConfirmed)
+        {
+            return new("Pleace confirm your email", HttpStatusCode.BadRequest);
         }
 
 
@@ -155,12 +169,11 @@ public class UserService : IUserService
     private async Task<string> GetEmailConfirmlink(User user)
     {
         var token = await _usermanager.GenerateEmailConfirmationTokenAsync(user);
-        var link = $"https://localhost:7202/api/Accounts/ConfirmEmail?userId={user.Id}$token=" +
-            $"{HttpUtility.UrlPathEncode(token)}";
-        Console.WriteLine("Confirm email link"+link);
-        return link ;
-
+        var link = $"https://localhost:7202/api/Account/ConfirmEmail?userId={user.Id}&token={HttpUtility.UrlEncode(token)}";
+      
+        return link;
     }
+
     private async Task<TokenResponse> GenerateTokensAsync(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\E_TicaretNew.Application\E_TicaretNew.Application.csproj" />
+    <ProjectReference Include="..\E_TicaretNew.Infrastructure\E_TicaretNew.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
