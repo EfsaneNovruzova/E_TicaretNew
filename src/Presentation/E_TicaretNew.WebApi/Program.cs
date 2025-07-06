@@ -73,9 +73,11 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 // JWT Settings load və register
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.Configure<JWTSettings>(jwtSettingsSection);
 var jwtSettings = jwtSettingsSection.Get<JWTSettings>()!;
+
 builder.Services.AddAuthorization(options =>
 {
     foreach (var permission in PermissionHelper.GetAllPermissionList())
