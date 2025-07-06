@@ -20,7 +20,8 @@ namespace E_TicaretNew.WebApi.Controllers
             _categoryService = categoryService;
         }
         [HttpPost]
-        [Authorize(Policy =Permissions.Category.Create)]
+
+        [Authorize(Policy = Permissions.Category.Create)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.InternalServerError)]
