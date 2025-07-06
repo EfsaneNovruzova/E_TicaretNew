@@ -23,7 +23,11 @@ public class UserService : IUserService
     private SignInManager<User> _signInManager { get; }
     private RoleManager<IdentityRole> _roleManager { get; }
     private JWTSettings _jwtSetting { get; }
-    public UserService(UserManager<User> usermanager, SignInManager<User> signInManager, IOptions<JWTSettings> jwtSettings, RoleManager<IdentityRole> roleManager, IEmailService emailService)
+    public UserService(UserManager<User> usermanager,
+                    SignInManager<User> signInManager,
+                    IOptions<JWTSettings> jwtSettings,
+                    RoleManager<IdentityRole> roleManager,
+                    IEmailService emailService)
     {
         _usermanager = usermanager;
         _signInManager = signInManager;
@@ -31,6 +35,7 @@ public class UserService : IUserService
         _roleManager = roleManager;
         _emailService = emailService;
     }
+
 
 
     public async Task<BaseResponse<string>> Register(UserRegisterDto dto)
@@ -180,12 +185,13 @@ public class UserService : IUserService
         var key = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
 
         var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier,user.Id),
-            new Claim(ClaimTypes.Email,user.Email!)
-        };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
+    };
 
         var roles = await _usermanager.GetRolesAsync(user);
+
         foreach (var roleName in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, roleName));
@@ -194,15 +200,22 @@ public class UserService : IUserService
             if (role != null)
             {
                 var roleClaims = await _roleManager.GetClaimsAsync(role);
+
                 var permissionClaims = roleClaims
                     .Where(c => c.Type == "Permission")
-                    .Distinct();
+                    .Distinct()
+                    .ToList();
+
                 foreach (var permissionClaim in permissionClaims)
                 {
-                    claims.Add(new Claim("Permission", permissionClaim.Value));
+                    if (!claims.Any(c => c.Type == "Permission" && c.Value == permissionClaim.Value))
+                    {
+                        claims.Add(new Claim("Permission", permissionClaim.Value));
+                    }
                 }
             }
         }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -220,7 +233,6 @@ public class UserService : IUserService
 
         user.RefreshToken = refreshToken;
         user.ExpiryDate = refreshTokenExpiryDate;
-
         await _usermanager.UpdateAsync(user);
 
         return new TokenResponse
@@ -230,6 +242,7 @@ public class UserService : IUserService
             ExpireDate = tokenDescriptor.Expires
         };
     }
+
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
