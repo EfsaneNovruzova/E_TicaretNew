@@ -4,6 +4,7 @@ using E_TicaretNew.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_TicaretNew.Persistence.Migrations
 {
     [DbContext(typeof(E_TicaretNewDbContext))]
-    partial class E_TicaretNewDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250707011335_orderproductdelete")]
+    partial class orderproductdelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,9 +193,6 @@ namespace E_TicaretNew.Persistence.Migrations
 
                     b.Property<string>("CreatedUser")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

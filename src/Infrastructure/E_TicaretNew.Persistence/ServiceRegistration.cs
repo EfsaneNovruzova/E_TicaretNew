@@ -16,6 +16,7 @@ public static class ServiceRegistration
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         #endregion
 
         #region Servicies
@@ -24,6 +25,7 @@ public static class ServiceRegistration
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IOrderService, OrderService>();
         #endregion
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
