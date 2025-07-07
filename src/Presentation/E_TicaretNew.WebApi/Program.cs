@@ -82,7 +82,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 // JWT Settings load və register
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JWTSettings>(jwtSettingsSection);
-builder.Services.AddScoped(sp => sp.GetRequiredService<IOptions<JWTSettings>>().Value); // BU MÜTLƏQDİR
+builder.Services.AddScoped(sp => sp.GetRequiredService<IOptions<JWTSettings>>().Value); 
 
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
