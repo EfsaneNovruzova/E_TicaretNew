@@ -4,4 +4,5 @@ public class CategoryCreateDto
 {
     //fluent validation
     public string Name { get; set; } = null!;
+    public Guid? ParentId { get; set; }
 }
