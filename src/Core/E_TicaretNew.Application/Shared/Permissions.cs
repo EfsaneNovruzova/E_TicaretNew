@@ -46,6 +46,7 @@ public static class Permissions
         public const string DeleteProductImage = "Product.DeleteProductImage";
         public const string AddProductImage = "Product.AddProductImage";
         public const string AddProductFavourite = "Product.AddProductFavourite";
+        
 
         public static List<string> All = new()
         { 
@@ -64,11 +65,13 @@ public static class Permissions
     {
         public const string AddRole = "Account.AddRole";
         public const string Create = "Account.Create";
+        public const string GetAllUsers = "Account.GetAllUsers";
 
         public static List<string> All = new()
         { 
               AddRole,
-              Create
+              Create,
+            GetAllUsers
         };
     }
 

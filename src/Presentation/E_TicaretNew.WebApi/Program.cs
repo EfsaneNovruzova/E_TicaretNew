@@ -16,6 +16,7 @@ using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Shared.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using E_TicaretNew.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +130,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await SeedData.CreateAdminUser(userManager, roleManager);
 }
 
 
