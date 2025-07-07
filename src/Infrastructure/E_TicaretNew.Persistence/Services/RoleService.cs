@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.RoleDTO;
+using E_TicaretNew.Application.DTOs.RoleDTOs;
 using E_TicaretNew.Application.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
 
@@ -68,6 +69,40 @@ public class RoleService : IRoleService
 
         return new BaseResponse<string?>("Role deleted successfully", true, HttpStatusCode.OK);
     }
+
+    public async Task<BaseResponse<string?>> UpdateRoleAsync(string roleName, RoleUpdateDto dto)
+    {
+        var role = await _roleManager.FindByNameAsync(roleName);
+        if (role == null)
+            return new BaseResponse<string?>("Role not found", null, HttpStatusCode.NotFound);
+
+        
+        if (!string.IsNullOrWhiteSpace(dto.NewName) && dto.NewName != role.Name)
+        {
+            role.Name = dto.NewName;
+            var nameUpdateResult = await _roleManager.UpdateAsync(role);
+            if (!nameUpdateResult.Succeeded)
+            {
+                var nameErrors = string.Join(" | ", nameUpdateResult.Errors.Select(e => e.Description));
+                return new BaseResponse<string?>($"Failed to update role name: {nameErrors}", null, HttpStatusCode.BadRequest);
+            }
+        }
+
+        var currentClaims = await _roleManager.GetClaimsAsync(role);
+        foreach (var claim in currentClaims.Where(c => c.Type == "Permission"))
+        {
+            await _roleManager.RemoveClaimAsync(role, claim);
+        }
+
+        
+        foreach (var permission in dto.PermissionList.Distinct())
+        {
+            await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
+        }
+
+        return new BaseResponse<string?>("Role updated successfully", null, HttpStatusCode.OK);
+    }
+
 
 }
 

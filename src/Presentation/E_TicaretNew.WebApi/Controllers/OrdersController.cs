@@ -1,5 +1,6 @@
 ﻿using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.OrderDTOs;
+using E_TicaretNew.Application.Shared;
 using E_TicaretNew.Domain.Enums.OrderEnum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "BuyerPolicy")]  // Yalnız Buyer sifariş verə bilər
+    [Authorize(Policy = Permissions.Order.Create)]
     public async Task<IActionResult> Create([FromBody] OrderCreateDto dto)
     {
         var userId = GetUserId();
@@ -32,7 +33,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("my")]
-    [Authorize(Policy = "BuyerPolicy")]
+    [Authorize(Policy = Permissions.Order.GetMyOrders)]
     public async Task<IActionResult> GetMyOrders(int pageNumber = 1, int pageSize = 10)
     {
         var userId = GetUserId();
@@ -41,7 +42,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("my-sales")]
-    [Authorize(Policy = "SellerPolicy")]
+    [Authorize(Policy = Permissions.Order.GetMySales)]
     public async Task<IActionResult> GetMySales(int pageNumber = 1, int pageSize = 10)
     {
         var userId = GetUserId();
@@ -61,7 +62,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    [Authorize(Policy = "OrderStatusChangePolicy")] // Status dəyişmək üçün xüsusi policy
+    [Authorize(Policy = Permissions.Order.UpdateStatus)]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] OrderStatus newStatus)
     {
         var userId = GetUserId();
@@ -70,7 +71,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost("{id}/cancel")]
-    [Authorize(Policy = "BuyerPolicy")]
+    [Authorize(Policy = Permissions.Order.Cancel)]
     public async Task<IActionResult> CancelOrder(Guid id)
     {
         var userId = GetUserId();
