@@ -22,7 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddValidatorsFromAssembly(typeof(UserRegisterDtoValidator).Assembly);
 builder.Services.RegisterService();
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
 
 builder.Services.AddControllers();

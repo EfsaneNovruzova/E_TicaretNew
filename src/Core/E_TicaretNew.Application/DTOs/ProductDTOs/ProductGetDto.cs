@@ -1,4 +1,6 @@
-﻿namespace E_TicaretNew.Application.DTOs.ProductDTOs;
+﻿using E_TicaretNew.Application.DTOs.CategoryDtos;
+
+namespace E_TicaretNew.Application.DTOs.ProductDTOs;
 
 public class ProductGetDto
 {
@@ -12,4 +14,5 @@ public class ProductGetDto
     //public List<ImageGetDto> Images { get; set; }
     public int FavoritesCount { get; set; }
     public int ReviewsCount { get; set; }
+   
 }

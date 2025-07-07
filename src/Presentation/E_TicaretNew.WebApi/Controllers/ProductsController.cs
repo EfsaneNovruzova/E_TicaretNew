@@ -6,6 +6,7 @@ using E_TicaretNew.Application.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Security.Claims;
 
 namespace E_TicaretNew.WebApi.Controllers
 {
@@ -50,19 +51,19 @@ namespace E_TicaretNew.WebApi.Controllers
             return StatusCode((int)result.StatusCode, result);
         }
 
-       
+
         [HttpPost]
-       [Authorize(Policy = Permissions.Product.Create)]
-        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.Created)]
-        [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.BadRequest)]
+        [Authorize(Policy = Permissions.Product.Create)]
         public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
         {
-            dto.UserId = User.FindFirst("sub")?.Value!;
-            var result = await _productService.CreateAsync(dto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _productService.CreateAsync(dto, userId);
             return StatusCode((int)result.StatusCode, result);
         }
 
- 
+
+
+
         [HttpPut("{id}")]
         [Authorize(Policy = Permissions.Product.Update)]
         [ProducesResponseType(typeof(BaseResponse<string>), (int)HttpStatusCode.OK)]
