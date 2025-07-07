@@ -13,6 +13,7 @@ using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Application.Shared.Setting;
 using E_TicaretNew.Application.Shared;
 using System.Web;
+using static E_TicaretNew.Application.Shared.Permissions;
 
 namespace E_TicaretNew.Persistence.Services;
 
@@ -171,6 +172,66 @@ public class UserService : IUserService
         }
         return new("Email Confirmation successfully.", HttpStatusCode.OK);
     }
+
+
+    public async Task<BaseResponse<List<UserGetDto>>> GetAllUsersAsync()
+    {
+        var users = _usermanager.Users.ToList();
+
+        var userDtos = users.Select(u => new UserGetDto
+        {
+            Id = u.Id,
+            FulName = u.FulName,
+            Email = u.Email
+        }).ToList();
+
+        return new BaseResponse<List<UserGetDto>>("All users", userDtos, HttpStatusCode.OK);
+    }
+
+    public async Task<BaseResponse<UserGetDto>> GetByIdAsync(string id)
+    {
+        var user = await _usermanager.FindByIdAsync(id);
+        if (user is null)
+            return new("User not found", null, HttpStatusCode.NotFound);
+
+        var dto = new UserGetDto
+        {
+            Id = user.Id,
+            FulName = user.FulName,
+            Email = user.Email
+        };
+
+        return new("User found", dto, HttpStatusCode.OK);
+    }
+
+    public static async Task SeedAdminRoleAndClaims(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+    {
+        var adminRole = await roleManager.FindByNameAsync("Admin") ?? new IdentityRole("Admin");
+
+        if (adminRole.Id == null) // yəni yeni rol yaradılırsa
+            await roleManager.CreateAsync(adminRole);
+
+        var claims = await roleManager.GetClaimsAsync(adminRole);
+        var permissionsToAdd = Account.All.Where(p => !claims.Any(c => c.Type == "Permission" && c.Value == p));
+
+        foreach (var permission in permissionsToAdd)
+            await roleManager.AddClaimAsync(adminRole, new Claim("Permission", permission));
+
+        var adminEmail = "novruzovafsan88@gmail.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+        if (adminUser == null)
+        {
+            adminUser = new User { Email = adminEmail, UserName = adminEmail, FulName = "Administrator" };
+            var result = await userManager.CreateAsync(adminUser, "Admin123!");
+            if (!result.Succeeded) throw new Exception($"Admin user creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+
     private async Task<string> GetEmailConfirmlink(User user)
     {
         var token = await _usermanager.GenerateEmailConfirmationTokenAsync(user);
