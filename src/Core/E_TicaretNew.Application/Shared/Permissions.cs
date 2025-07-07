@@ -109,4 +109,20 @@ public static class Permissions
 
         };
     }
+
+
+   
+        public static class Files
+        {
+            public const string Upload = "Files.Upload";
+            public const string Delete = "Files.Delete";
+
+             public static List<string> All = new()
+             {
+                  Upload,
+                  Delete 
+              };
+        }
+    
+
 }
