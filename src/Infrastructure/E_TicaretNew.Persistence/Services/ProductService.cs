@@ -5,17 +5,14 @@ using E_TicaretNew.Application.DTOs.ProductDTOs;
 using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Http;
-
-namespace E_TicaretNew.Persistence.Services;
+using System.Net;
 
 public class ProductService : IProductService
 {
-    private  IRepository<Product> _productRepository {  get;  }
-    private  IRepository<Category> _categoryRepository { get; }
-    private  IMapper _mapper { get; }
+    private readonly IRepository<Product> _productRepository;
+    private readonly IRepository<Category> _categoryRepository;
+    private readonly IMapper _mapper;
 
     public ProductService(IRepository<Product> productRepository,
                           IRepository<Category> categoryRepository,
@@ -26,18 +23,19 @@ public class ProductService : IProductService
         _mapper = mapper;
     }
 
-    public async Task<BaseResponse<string>> CreateAsync(ProductCreateDto dto)
+    public async Task<BaseResponse<string>> CreateAsync(ProductCreateDto dto, string userId)
     {
-        var category = await _categoryRepository.GetByIdAsync(dto.CategoryId);
-        if (category == null)
-            return new BaseResponse<string>("Category not found", HttpStatusCode.NotFound);
-
         var product = _mapper.Map<Product>(dto);
+
+        product.UserId = userId; // <<<< BU MÜTLƏQDİR!!!
+
         await _productRepository.AddAsync(product);
         await _productRepository.SaveChangeAsync();
 
         return new BaseResponse<string>("Product created", "Success", HttpStatusCode.Created);
     }
+
+
 
     public async Task<BaseResponse<string>> UpdateAsync(ProductUpdateDto dto, string userId)
     {
@@ -48,15 +46,14 @@ public class ProductService : IProductService
         if (product.UserId != userId)
             return new BaseResponse<string>("Unauthorized", HttpStatusCode.Unauthorized);
 
-        product.Name = dto.Name;
-        product.Price = dto.Price;
-        product.CategoryId = dto.CategoryId;
+        _mapper.Map(dto, product); // avtomatik map et
 
         _productRepository.Update(product);
         await _productRepository.SaveChangeAsync();
 
         return new BaseResponse<string>("Product updated", "Success", HttpStatusCode.OK);
     }
+
 
     public async Task<BaseResponse<string>> DeleteAsync(Guid id, string userId)
     {
@@ -73,6 +70,7 @@ public class ProductService : IProductService
         return new BaseResponse<string>("Product deleted", "Success", HttpStatusCode.OK);
     }
 
+
     public async Task<BaseResponse<ProductGetDto>> GetByIdAsync(Guid id)
     {
         Expression<Func<Product, object>>[] includes = { p => p.Category, p => p.Favorites, p => p.Reviews };
@@ -84,12 +82,13 @@ public class ProductService : IProductService
             return new BaseResponse<ProductGetDto>("Product not found", HttpStatusCode.NotFound);
 
         var dto = _mapper.Map<ProductGetDto>(product);
-        dto.CategoryName = product.Category.Name;
+        dto.CategoryName = product.Category?.Name;
         dto.FavoritesCount = product.Favorites?.Count ?? 0;
         dto.ReviewsCount = product.Reviews?.Count ?? 0;
 
         return new BaseResponse<ProductGetDto>("Success", dto, HttpStatusCode.OK);
     }
+
 
     public async Task<BaseResponse<List<ProductGetDto>>> GetAllAsync(ProductFilterDto filter)
     {
@@ -113,7 +112,7 @@ public class ProductService : IProductService
         var result = products.Select(p =>
         {
             var dto = _mapper.Map<ProductGetDto>(p);
-            dto.CategoryName = p.Category.Name;
+            dto.CategoryName = p.Category?.Name;
             dto.FavoritesCount = p.Favorites?.Count ?? 0;
             dto.ReviewsCount = p.Reviews?.Count ?? 0;
             return dto;
@@ -121,6 +120,7 @@ public class ProductService : IProductService
 
         return new BaseResponse<List<ProductGetDto>>("Success", result, HttpStatusCode.OK);
     }
+
 
     public async Task<BaseResponse<List<ProductGetDto>>> GetMyProductsAsync(string userId)
     {
@@ -132,7 +132,7 @@ public class ProductService : IProductService
         var result = products.Select(p =>
         {
             var dto = _mapper.Map<ProductGetDto>(p);
-            dto.CategoryName = p.Category.Name;
+            dto.CategoryName = p.Category?.Name;
             dto.FavoritesCount = p.Favorites?.Count ?? 0;
             dto.ReviewsCount = p.Reviews?.Count ?? 0;
             return dto;
@@ -141,8 +141,5 @@ public class ProductService : IProductService
         return new BaseResponse<List<ProductGetDto>>("Success", result, HttpStatusCode.OK);
     }
 
-
-
 }
-
 

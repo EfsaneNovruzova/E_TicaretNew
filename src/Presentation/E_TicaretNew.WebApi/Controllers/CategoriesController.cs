@@ -50,19 +50,13 @@ namespace E_TicaretNew.WebApi.Controllers
             var result = await _categoryService.DeleteAsync(id);
             return StatusCode((int)result.StatusCode, result);
         }
-
-
         [HttpGet]
-        public IEnumerable<string> Get()
+        [ProducesResponseType(typeof(BaseResponse<List<CategoryGetDto>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResponse<List<CategoryGetDto>>), (int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> Get()
         {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<CategoriesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
+            var result = await _categoryService.GetAll();
+            return StatusCode((int)result.StatusCode, result);
         }
 
 
@@ -70,6 +64,9 @@ namespace E_TicaretNew.WebApi.Controllers
 
 
 
-      
+
+
+
+
     }
 }

@@ -4,5 +4,6 @@ public class CategoryGetDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }
+    public List<CategoryGetDto>? Children { get; set; }
 }
 

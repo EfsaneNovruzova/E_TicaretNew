@@ -30,7 +30,8 @@ public class CategoryService : ICategoryService
 
         Category category = new()
         {
-            Name = dto.Name
+            Name = dto.Name,
+            ParentId = dto.ParentId
         };
 
         await _categoryRepository.AddAsync(category);
@@ -64,9 +65,9 @@ public class CategoryService : ICategoryService
 
     public async Task<BaseResponse<List<CategoryGetDto>>> GetAll()
     {
-        var categories = await _categoryRepository.GetAll().ToListAsync();
+        var allCategories = await _categoryRepository.GetAll().ToListAsync();
 
-        if (categories == null || categories.Count == 0)
+        if (allCategories == null || allCategories.Count == 0)
         {
             return new BaseResponse<List<CategoryGetDto>>(
                 "No categories found",
@@ -74,19 +75,32 @@ public class CategoryService : ICategoryService
                 HttpStatusCode.NotFound);
         }
 
-        var categoryDtos = categories.Select(c => new CategoryGetDto
-        {
-            Id = c.Id,
-            Name = c.Name
-        }).ToList();
+        var mainCategories = allCategories
+            .Where(c => c.ParentId == null)
+            .Select(c => MapWithChildren(c, allCategories))
+            .ToList();
 
         return new BaseResponse<List<CategoryGetDto>>(
-            "Categories retrieved successfully",
-            categoryDtos,
+            "Nested categories retrieved successfully",
+            mainCategories,
             HttpStatusCode.OK);
     }
 
-    public  async Task<BaseResponse<CategoryGetDto>> GetByIdAsync(Guid id)
+    private CategoryGetDto MapWithChildren(Category category, List<Category> allCategories)
+    {
+        return new CategoryGetDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Children = allCategories
+                .Where(c => c.ParentId == category.Id)
+                .Select(child => MapWithChildren(child, allCategories))
+                .ToList()
+        };
+    }
+
+
+    public async Task<BaseResponse<CategoryGetDto>> GetByIdAsync(Guid id)
     {
         var category = await _categoryRepository.GetByIdAsync(id);
 
@@ -155,6 +169,7 @@ public class CategoryService : ICategoryService
             return new BaseResponse<CategoryUpdateDto>("This category already exit", HttpStatusCode.BadRequest);
         }
         categoryDb.Name = dto.Name;
+        categoryDb.ParentId = dto.ParentId;
         await _categoryRepository.SaveChangeAsync();
         return new BaseResponse<CategoryUpdateDto>("Successfully update", dto, HttpStatusCode.OK);
 
