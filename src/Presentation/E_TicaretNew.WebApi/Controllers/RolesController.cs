@@ -1,5 +1,6 @@
 ﻿using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.DTOs.RoleDTO;
+using E_TicaretNew.Application.DTOs.RoleDTOs;
 using E_TicaretNew.Application.Shared.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,6 +41,13 @@ namespace E_TicaretNew.WebApi.Controllers
         public async Task<IActionResult> DeleteRole(string roleName)
         {
             var result = await _roleService.DeleteRole(roleName);
+            return StatusCode((int)result.StatusCode, result);
+        }
+
+        [HttpPut("{roleName}")]
+        public async Task<IActionResult> UpdateRole(string roleName, [FromBody] RoleUpdateDto dto)
+        {
+            var result = await _roleService.UpdateRoleAsync(roleName, dto);
             return StatusCode((int)result.StatusCode, result);
         }
 

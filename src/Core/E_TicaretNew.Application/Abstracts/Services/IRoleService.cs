@@ -1,4 +1,5 @@
 ﻿using E_TicaretNew.Application.DTOs.RoleDTO;
+using E_TicaretNew.Application.DTOs.RoleDTOs;
 using E_TicaretNew.Application.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,4 +11,5 @@ public interface IRoleService
     Task<BaseResponse<List<IdentityRole>>> GetAllRoles();
 
     Task<BaseResponse<string?>> DeleteRole(string roleName);
+    Task<BaseResponse<string?>> UpdateRoleAsync(string roleName, RoleUpdateDto dto);
 }
