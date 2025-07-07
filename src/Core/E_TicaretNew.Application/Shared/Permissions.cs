@@ -19,22 +19,23 @@ public static class Permissions
     public static class Order
     {
         public const string Create = "Order.Create";
-        public const string Update = "Order.Update";
-        public const string Delete = "Order.Delete";
-        public const string GetMy = "Order.GetMy";
-        public const string GetDetail = "Order.GetDetail";
+        public const string UpdateStatus = "Order.UpdateStatus";
+        public const string Cancel = "Order.Cancel";
+        public const string GetMyOrders = "Order.GetMyOrders";
         public const string GetMySales = "Order.GetMySales";
+        public const string GetDetail = "Order.GetDetail";
 
         public static List<string> All = new()
-        {
-            Create,
-            Update,
-            Delete,
-            GetMy,
-            GetDetail,
-            GetMySales,
-        };
-     }
+    {
+        Create,
+        UpdateStatus,
+        Cancel,
+        GetMyOrders,
+        GetMySales,
+        GetDetail,
+    };
+    }
+
 
     public static class Product
     {
