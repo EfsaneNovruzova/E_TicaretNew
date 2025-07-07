@@ -90,4 +90,23 @@ public static class Permissions
         };
 
     }
+
+
+    public static class Payment
+    {
+        public const string View = "Payments.View";
+        public const string Create = "Payments.Create";
+        public const string Update = "Payments.Update";
+        public const string Delete = "Payments.Delete";
+
+        public static List<string> All = new()
+        {
+            View,
+
+            Create,
+            Update,
+            Delete
+
+        };
+    }
 }
