@@ -8,6 +8,7 @@ using E_TicaretNew.Domain.Entities;
 using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Application.Shared;
 using System.Net;
+using E_TicaretNew.Application.DTOs.PaymentDTOs;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -41,15 +42,14 @@ public class PaymentsController : ControllerBase
         var response = await _paymentService.GetByIdAsync(id);
         return StatusCode((int)response.StatusCode, response);
     }
-
-    [HttpPost]
-    [Authorize(Policy = Permissions.Payment.Create)]
     [ProducesResponseType(typeof(BaseResponse<Payment>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(BaseResponse<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(BaseResponse<string>), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Create([FromBody] Payment payment)
+    [HttpPost]
+    [Authorize(Policy = Permissions.Payment.Create)]
+    public async Task<IActionResult> Create([FromBody] PaymentCreateDto dto)
     {
-        var response = await _paymentService.CreateAsync(payment);
+        var response = await _paymentService.CreateAsync(dto);
         return StatusCode((int)response.StatusCode, response);
     }
 

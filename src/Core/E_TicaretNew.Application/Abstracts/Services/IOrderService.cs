@@ -1,12 +1,13 @@
 ﻿using E_TicaretNew.Application.DTOs.OrderDTOs;
 using E_TicaretNew.Application.Shared.Responses;
+using E_TicaretNew.Domain.Entities;
 using E_TicaretNew.Domain.Enums.OrderEnum;
 
 namespace E_TicaretNew.Application.Abstracts.Services;
 
 public interface IOrderService
 {
-    Task<BaseResponse<string>> CreateAsync(OrderCreateDto dto, string userId);
+    Task<BaseResponse<Order>> CreateAsync(OrderCreateDto dto, string userId);
 
     Task<BaseResponse<List<OrderGetDto>>> GetMyOrdersAsync(string userId, int pageNumber, int pageSize);
 

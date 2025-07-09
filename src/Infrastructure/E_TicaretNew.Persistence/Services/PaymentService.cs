@@ -9,14 +9,19 @@ using E_TicaretNew.Application.Abstracts.Repositories;
 using E_TicaretNew.Application.Abstracts.Services;
 using E_TicaretNew.Application.Shared.Responses;
 using E_TicaretNew.Domain.Entities;
+using E_TicaretNew.Application.DTOs.PaymentDTOs;
+using E_TicaretNew.Domain.Enums.OrderEnum;
+using E_TicaretNew.Persistence.Repositories;
 
 public class PaymentService : IPaymentService
 {
     private readonly IRepository<Payment> _paymentRepository;
+    private readonly IOrderRepository _orderRepository;
 
-    public PaymentService(IRepository<Payment> paymentRepository)
+    public PaymentService(IRepository<Payment> paymentRepository, IOrderRepository orderRepository)
     {
         _paymentRepository = paymentRepository;
+        _orderRepository = orderRepository;
     }
 
     public async Task<BaseResponse<List<Payment>>> GetAllAsync()
@@ -34,11 +39,39 @@ public class PaymentService : IPaymentService
         return new BaseResponse<Payment>("Payment retrieved successfully", payment, HttpStatusCode.OK);
     }
 
-    public async Task<BaseResponse<Payment>> CreateAsync(Payment payment)
+    public async Task<BaseResponse<Payment>> CreateAsync(PaymentCreateDto dto)
     {
+        var order = await _orderRepository.GetByIdAsync(dto.OrderId);
+        if (order == null)
+            return new BaseResponse<Payment>("Order not found", HttpStatusCode.BadRequest);
+
+        if (order.Status != OrderStatus.PendingPayment)
+            return new BaseResponse<Payment>("Order is not awaiting payment", HttpStatusCode.BadRequest);
+
+        if (dto.Amount != order.TotalAmount)
+            return new BaseResponse<Payment>("Payment amount does not match order total", HttpStatusCode.BadRequest);
+
+        var payment = new Payment
+        {
+            Id = Guid.NewGuid(),
+            OrderId = dto.OrderId,
+            Amount = dto.Amount,
+            PaymentMethod = dto.PaymentMethod,
+            TransactionId = dto.TransactionId,
+            IsSuccessful = true, // Əslində ödəniş sistemi ilə təsdiqlənməlidir
+            CreatedAt = DateTime.UtcNow
+        };
+
         await _paymentRepository.AddAsync(payment);
+
+        // Order statusunu yenilə
+        order.Status = OrderStatus.Paid;
+        _orderRepository.Update(order);
+
         await _paymentRepository.SaveChangeAsync();
-        return new BaseResponse<Payment>("Payment created successfully", payment, HttpStatusCode.Created);
+        await _orderRepository.SaveChangeAsync();
+
+        return new BaseResponse<Payment>("Payment successful and order updated", payment, HttpStatusCode.Created);
     }
 
     public async Task<BaseResponse<Payment>> UpdateAsync(Payment payment)
