@@ -43,13 +43,13 @@ public class PaymentService : IPaymentService
     {
         var order = await _orderRepository.GetByIdAsync(dto.OrderId);
         if (order == null)
-            return new BaseResponse<Payment>("Order not found", HttpStatusCode.BadRequest);
+            return new BaseResponse<Payment>("Sifariş tapılmadı", HttpStatusCode.BadRequest);
 
         if (order.Status != OrderStatus.PendingPayment)
-            return new BaseResponse<Payment>("Order is not awaiting payment", HttpStatusCode.BadRequest);
+            return new BaseResponse<Payment>("Bu sifariş artıq ödənilib və ya ləğv edilib", HttpStatusCode.BadRequest);
 
         if (dto.Amount != order.TotalAmount)
-            return new BaseResponse<Payment>("Payment amount does not match order total", HttpStatusCode.BadRequest);
+            return new BaseResponse<Payment>("Ödəniş məbləği sifarişlə uyğun deyil", HttpStatusCode.BadRequest);
 
         var payment = new Payment
         {
@@ -58,20 +58,21 @@ public class PaymentService : IPaymentService
             Amount = dto.Amount,
             PaymentMethod = dto.PaymentMethod,
             TransactionId = dto.TransactionId,
-            IsSuccessful = true, // Əslində ödəniş sistemi ilə təsdiqlənməlidir
+            IsSuccessful = true,
             CreatedAt = DateTime.UtcNow
         };
 
         await _paymentRepository.AddAsync(payment);
 
-        // Order statusunu yenilə
+        // Sifarişi güncəllə
         order.Status = OrderStatus.Paid;
+        order.PaymentId = payment.Id;
         _orderRepository.Update(order);
 
         await _paymentRepository.SaveChangeAsync();
         await _orderRepository.SaveChangeAsync();
 
-        return new BaseResponse<Payment>("Payment successful and order updated", payment, HttpStatusCode.Created);
+        return new BaseResponse<Payment>("Ödəniş uğurla həyata keçirildi və sifariş tamamlandı", payment, HttpStatusCode.Created);
     }
 
     public async Task<BaseResponse<Payment>> UpdateAsync(Payment payment)

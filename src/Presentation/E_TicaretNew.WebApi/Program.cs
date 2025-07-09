@@ -24,7 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddValidatorsFromAssembly(typeof(UserRegisterDtoValidator).Assembly);
 builder.Services.RegisterService();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
+builder.Services.AddControllers()
+    .AddJsonOptions(x =>
+        x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve);
 
 
 builder.Services.AddControllers();

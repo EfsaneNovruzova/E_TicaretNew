@@ -11,6 +11,8 @@ using System.Net;
 using System.Linq.Expressions;
 using E_TicaretNew.Domain.Enums.OrderEnum;
 
+
+
 public class OrderService : IOrderService
 {
     private readonly IRepository<Order> _orderRepository;
@@ -18,10 +20,11 @@ public class OrderService : IOrderService
     private readonly IRepository<Payment> _paymentRepository;
     private readonly IMapper _mapper;
 
-    public OrderService(IRepository<Order> orderRepository,
-                        IRepository<Product> productRepository,
-                        IRepository<Payment> paymentRepository,
-                        IMapper mapper)
+    public OrderService(
+        IRepository<Order> orderRepository,
+        IRepository<Product> productRepository,
+        IRepository<Payment> paymentRepository,
+        IMapper mapper)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
@@ -29,6 +32,7 @@ public class OrderService : IOrderService
         _mapper = mapper;
     }
 
+    // 1. Sifariş yaratmaq
     public async Task<BaseResponse<Order>> CreateAsync(OrderCreateDto dto, string userId)
     {
         decimal totalAmount = 0;
@@ -40,6 +44,7 @@ public class OrderService : IOrderService
             if (product == null)
                 return new BaseResponse<Order>($"Product {item.ProductId} not found", HttpStatusCode.BadRequest);
 
+            // Qiymət hesablanır
             totalAmount += product.Price * item.Quantity;
 
             orderItems.Add(new OrderProduct
@@ -55,22 +60,38 @@ public class OrderService : IOrderService
             UserId = userId,
             OrderProducts = orderItems,
             TotalAmount = totalAmount,
-            Status = OrderStatus.PendingPayment,
             CreatedAt = DateTime.UtcNow
         };
+
+        // Əgər ödəniş ID-si varsa, status "Paid" olur, yoxdursa "PendingPayment"
+        if (dto.PaymentId is not null)
+        {
+            order.PaymentId = dto.PaymentId;
+            order.Status = OrderStatus.Paid;
+        }
+        else
+        {
+            order.Status = OrderStatus.PendingPayment;
+        }
 
         await _orderRepository.AddAsync(order);
         await _orderRepository.SaveChangeAsync();
 
-        return new BaseResponse<Order>("Order created successfully", order, HttpStatusCode.Created);
+        string message = order.Status == OrderStatus.Paid
+            ? "Sifariş və ödəniş uğurla tamamlandı."
+            : "Sifariş uğurla yaradıldı. Ödəniş gözlənilir.";
+
+        return new BaseResponse<Order>(message, order, HttpStatusCode.Created);
     }
 
+    // 2. İstifadəçinin sifarişlərini almaq
     public async Task<BaseResponse<List<OrderGetDto>>> GetMyOrdersAsync(string userId, int pageNumber, int pageSize)
     {
-        Expression<Func<Order, object>>[] includes = { o => o.OrderProducts, o => o.OrderProducts.Select(op => op.Product) };
+        var query = _orderRepository.GetByFiltered(o => o.UserId == userId);
 
-        var query = _orderRepository.GetByFiltered(o => o.UserId == userId, includes);
         var orders = await query
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
             .OrderByDescending(o => o.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -81,16 +102,15 @@ public class OrderService : IOrderService
         return new BaseResponse<List<OrderGetDto>>("Success", result, HttpStatusCode.OK);
     }
 
+    // 3. Satıcının satışlarını almaq (onun məhsullarına gələn sifarişlər)
     public async Task<BaseResponse<List<OrderGetDto>>> GetMySalesAsync(string userId, int pageNumber, int pageSize)
     {
-        // Satıcı kimi məhsullarına gələn sifarişlər
-        Expression<Func<Order, object>>[] includes = { o => o.OrderProducts, o => o.OrderProducts.Select(op => op.Product) };
-
         var query = _orderRepository.GetByFiltered(
-            o => o.OrderProducts.Any(op => op.Product.UserId == userId),
-            includes);
+            o => o.OrderProducts.Any(op => op.Product.UserId == userId));
 
         var orders = await query
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
             .OrderByDescending(o => o.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -101,16 +121,17 @@ public class OrderService : IOrderService
         return new BaseResponse<List<OrderGetDto>>("Success", result, HttpStatusCode.OK);
     }
 
+    // 4. İstifadəçi üçün sifarişin detallarını almaq
     public async Task<BaseResponse<OrderGetDto>> GetByIdAsync(Guid id, string userId)
     {
-        Expression<Func<Order, object>>[] includes = { o => o.OrderProducts, o => o.OrderProducts.Select(op => op.Product) };
-
-        var order = _orderRepository.GetByFiltered(o => o.Id == id, includes).FirstOrDefault();
+        var order = await _orderRepository.GetByFiltered(o => o.Id == id)
+            .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+            .FirstOrDefaultAsync();
 
         if (order == null)
             return new BaseResponse<OrderGetDto>("Order not found", HttpStatusCode.NotFound);
 
-        // Yalnız order sahibi və ya satıcı görə bilər
         bool isOwner = order.UserId == userId;
         bool isSeller = order.OrderProducts.Any(op => op.Product.UserId == userId);
 
@@ -122,23 +143,30 @@ public class OrderService : IOrderService
         return new BaseResponse<OrderGetDto>("Success", dto, HttpStatusCode.OK);
     }
 
+    // 5. Sifariş statusunu yeniləmək (satıcı və ya alıcı üçün uyğun statuslar)
     public async Task<BaseResponse<string>> UpdateStatusAsync(Guid orderId, OrderStatus newStatus, string userId)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId);
+        var includes = new Expression<Func<Order, object>>[]
+        {
+        o => o.OrderProducts,
+        o => o.OrderProducts.Select(op => op.Product)
+        };
+
+        var order = _orderRepository.GetByFiltered(o => o.Id == orderId, includes).FirstOrDefault();
+
         if (order == null)
             return new BaseResponse<string>("Order not found", HttpStatusCode.NotFound);
 
-        // Statusu dəyişmək hüququ:
-        // Seller yalnız öz məhsullarının sifarişlərinə status dəyişə bilər
+        // order.OrderProducts null yoxlama
+        if (order.OrderProducts == null || !order.OrderProducts.Any())
+            return new BaseResponse<string>("Order products not loaded", HttpStatusCode.InternalServerError);
+
         bool isSeller = order.OrderProducts.Any(op => op.Product.UserId == userId);
-        // Buyer yalnız öz sifarişində status dəyişə bilər
         bool isBuyer = order.UserId == userId;
 
         if (!isSeller && !isBuyer)
             return new BaseResponse<string>("Unauthorized", HttpStatusCode.Unauthorized);
 
-        // Sadə qayda: seller statusu Processing, Shipped, Delivered edə bilər
-        // buyer isə yalnız Delivered statusunu təsdiqləyə bilər
         if (isSeller)
         {
             if (newStatus != OrderStatus.Processing && newStatus != OrderStatus.Shipped && newStatus != OrderStatus.Delivered)
@@ -157,6 +185,7 @@ public class OrderService : IOrderService
         return new BaseResponse<string>("Order status updated", HttpStatusCode.OK);
     }
 
+    // 6. Sifarişi ləğv etmək (yalnız PendingPayment statusunda olan və sahibi tərəfindən)
     public async Task<BaseResponse<string>> CancelOrderAsync(Guid orderId, string userId)
     {
         var order = await _orderRepository.GetByIdAsync(orderId);
