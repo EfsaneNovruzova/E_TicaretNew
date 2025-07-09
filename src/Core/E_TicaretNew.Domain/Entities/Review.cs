@@ -1,6 +1,6 @@
 ﻿namespace E_TicaretNew.Domain.Entities;
 
-public class Review
+public class Review :BaseEntity
 {
     public string Comment { get; set; }
 

@@ -30,6 +30,9 @@ public static class ServiceRegistration
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
+
         #endregion
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

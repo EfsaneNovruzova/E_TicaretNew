@@ -4,6 +4,7 @@ using E_TicaretNew.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_TicaretNew.Persistence.Migrations
 {
     [DbContext(typeof(E_TicaretNewDbContext))]
-    partial class E_TicaretNewDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250709113155_editReview")]
+    partial class editReview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
