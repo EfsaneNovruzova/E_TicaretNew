@@ -26,14 +26,14 @@ public static class Permissions
         public const string GetDetail = "Order.GetDetail";
 
         public static List<string> All = new()
-    {
+        {
         Create,
         UpdateStatus,
         Cancel,
         GetMyOrders,
         GetMySales,
         GetDetail,
-    };
+         };
     }
 
 
@@ -123,6 +123,29 @@ public static class Permissions
                   Delete 
               };
         }
-    
 
+
+    public static class Review
+    {
+        public const string Create = "Permissions.Review.Create";
+        public const string Delete = "Permissions.Review.Delete";
+        public static List<string> All = new()
+        {
+            Create,
+            Delete
+
+        };
+    }
+
+    public static class Favorite
+    {
+        public const string Toggle = "Permissions.Favorite.Toggle";
+        public const string View = "Permissions.Favorite.View";
+        public static List<string> All = new()
+        { 
+            Toggle,
+            View
+        };
+
+    }
 }

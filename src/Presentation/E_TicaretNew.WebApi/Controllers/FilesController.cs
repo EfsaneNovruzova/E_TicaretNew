@@ -1,4 +1,5 @@
-﻿using E_TicaretNew.Application.DTOs.FileDTOs;
+﻿using E_TicaretNew.Application.Abstracts.Services;
+using E_TicaretNew.Application.DTOs.FileDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static E_TicaretNew.Application.Abstracts.Services.IFileService;
