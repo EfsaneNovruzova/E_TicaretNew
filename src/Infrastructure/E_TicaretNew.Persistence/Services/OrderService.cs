@@ -29,48 +29,40 @@ public class OrderService : IOrderService
         _mapper = mapper;
     }
 
-    public async Task<BaseResponse<string>> CreateAsync(OrderCreateDto dto, string userId)
+    public async Task<BaseResponse<Order>> CreateAsync(OrderCreateDto dto, string userId)
     {
-        var payment = await _paymentRepository.GetByIdAsync(dto.PaymentId);
-        if (payment == null)
-            return new BaseResponse<string>("Payment method not found", HttpStatusCode.NotFound);
+        decimal totalAmount = 0;
+        var orderItems = new List<OrderProduct>();
 
-        var productIds = dto.Products.Select(p => p.ProductId).ToList();
-        var products = await _productRepository.GetByFiltered(p => productIds.Contains(p.Id)).ToListAsync();
+        foreach (var item in dto.Products)
+        {
+            var product = await _productRepository.GetByIdAsync(item.ProductId);
+            if (product == null)
+                return new BaseResponse<Order>($"Product {item.ProductId} not found", HttpStatusCode.BadRequest);
 
-        if (products.Count != dto.Products.Count)
-            return new BaseResponse<string>("One or more products not found", HttpStatusCode.NotFound);
+            totalAmount += product.Price * item.Quantity;
+
+            orderItems.Add(new OrderProduct
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = product.Price
+            });
+        }
 
         var order = new Order
         {
             UserId = userId,
-            PaymentId = dto.PaymentId,
-            Status = OrderStatus.Pending,
-            OrderProducts = new List<OrderProduct>()
+            OrderProducts = orderItems,
+            TotalAmount = totalAmount,
+            Status = OrderStatus.PendingPayment,
+            CreatedAt = DateTime.UtcNow
         };
-
-        decimal totalAmount = 0;
-
-        foreach (var opDto in dto.Products)
-        {
-            var product = products.First(p => p.Id == opDto.ProductId);
-            var orderProduct = new OrderProduct
-            {
-                ProductId = product.Id,
-                Quantity = opDto.Quantity,
-                UnitPrice = product.Price,
-            };
-
-            totalAmount += orderProduct.TotalPrice;
-            order.OrderProducts.Add(orderProduct);
-        }
-
-        order.TotalAmount = totalAmount;
 
         await _orderRepository.AddAsync(order);
         await _orderRepository.SaveChangeAsync();
 
-        return new BaseResponse<string>("Order created successfully", HttpStatusCode.Created);
+        return new BaseResponse<Order>("Order created successfully", order, HttpStatusCode.Created);
     }
 
     public async Task<BaseResponse<List<OrderGetDto>>> GetMyOrdersAsync(string userId, int pageNumber, int pageSize)
@@ -174,7 +166,7 @@ public class OrderService : IOrderService
         if (order.UserId != userId)
             return new BaseResponse<string>("Unauthorized", HttpStatusCode.Unauthorized);
 
-        if (order.Status != OrderStatus.Pending)
+        if (order.Status != OrderStatus.PendingPayment)
             return new BaseResponse<string>("Only pending orders can be cancelled", HttpStatusCode.BadRequest);
 
         order.Status = OrderStatus.Cancelled;

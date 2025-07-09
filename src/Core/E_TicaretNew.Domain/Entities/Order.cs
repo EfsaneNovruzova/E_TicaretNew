@@ -10,7 +10,7 @@ public class Order:BaseEntity
     public User User { get; set; }
     public Payment Payment { get; set; }
     public Guid PaymentId { get; set; }
-    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public OrderStatus Status { get; set; } = OrderStatus.PendingPayment;
 
     public decimal TotalAmount { get; set; } // Ümumi məbləğ
     public ICollection<OrderProduct> OrderProducts { get; set; }

@@ -27,10 +27,11 @@ public class OrdersController : ControllerBase
     [Authorize(Policy = Permissions.Order.Create)]
     public async Task<IActionResult> Create([FromBody] OrderCreateDto dto)
     {
-        var userId = GetUserId();
-        var result = await _orderService.CreateAsync(dto, userId);
-        return StatusCode((int)result.StatusCode, result);
+        var userId = _httpContextAccessor.HttpContext.User.FindFirst("nameid")?.Value;
+        var response = await _orderService.CreateAsync(dto, userId!);
+        return StatusCode((int)response.StatusCode, response);
     }
+
 
     [HttpGet("my")]
     [Authorize(Policy = Permissions.Order.GetMyOrders)]
